@@ -1,26 +1,13 @@
 function updateLowerDisplay(){
-    if(operation == ''){
-        lowerResult = first.toLocaleString(undefined, {maximumFractionDigits: 9});
-        if(lowerResult.length > 12){
-            first = first.toExponential(5);
-            lowerResult = first.toLocaleString();
-        }
-    }
-    else{
-        lowerResult = second.toLocaleString(undefined, {maximumFractionDigits: 9});
-        if(lowerResult.length > 12){
-            first = second.toExponential(5);
-            lowerResult = second.toLocaleString();
-        }
-    }
+    (operation == '') ? lowerResult = first : lowerResult = second;
     lowerDisplay.textContent = lowerResult;
 }
 
 function updateUpperDisplay(){
     if(operation != '')
-        upperDisplay.textContent = first.toLocaleString() + " " + operation;
+        upperDisplay.textContent = first + " " + operation;
     else
-        upperDisplay.textContent += (" "+ second.toLocaleString() + ' = ');
+        upperDisplay.textContent += (" "+ second + ' = ');
 }
 
 function clearLowerDisplay(){
@@ -32,27 +19,16 @@ function clearUpperDisplay(){
 }
 
 function updateNumber(e){
-    let n = parseInt(e.target.textContent);
-    if(operation == ''){
-        if(isDot)
-            first = (first + parseInt(n)/Math.pow(10,++power));
-        else    
-            first = (first*10 + parseInt(n));
-    }
-    else{
-        if(isDot)
-            second = (second + parseInt(n)/Math.pow(10,++power));
-        else    
-            second = (second*10 + parseInt(n));
-    }
+    let n = e.target.textContent;
+    (operation == '') ? first += n : second += n;
     updateLowerDisplay();
 }
 
 function updateOperation(e){
-    isDot = false;
-    power = 0;
     let op = e.target.id;
-    if(second!=0)
+    isDot = false;
+    if(first == '') return;
+    if(second != '')
         evaluate();
     switch(op){
         case 'add': operation = '+'; break;
@@ -67,34 +43,41 @@ function updateOperation(e){
 }
 
 function updateSign(){
-    (operation == '') ? first *= -1 : second *= -1;
+    if(operation == ''){
+        if(first != '')
+            (first.charAt(0) == '-') ? first = first.substring(1,) : first = '-' + first;
+    }
+    else{
+        if(second != '')
+            (second.charAt(0) == '-') ? second = second.substring(1,) : second = '-' + second;
+    }
     updateLowerDisplay();
     clearUpperDisplay();
 }
 
 function del(){
     if(operation == '')
-        first = Math.trunc(first/10);
+        first = first.slice(0,-1);
     else    
-        second = Math.trunc(second/10);
+        second = second.slice(0,-1);
     updateLowerDisplay();
 }
 
 function clear(){
     clearLowerDisplay();
     clearUpperDisplay();
-    first = 0;
-    second = 0;
+    first = '';
+    second = '';
     operation = '';
     isDot = false;
-    power = 0;
 }
 
-function dot(){
-    if(isDot) 
-        return;
-    isDot = true;
-    lowerDisplay.textContent += '.';
+function dot(e){
+    if(operation == '')
+        if(first.includes('.')) return;
+    else 
+        if(second.includes('.')) return;
+    updateNumber(e);
 }
 
 function evaluate(){
@@ -106,28 +89,22 @@ function evaluate(){
     updateUpperDisplay();
     operation = temp;
     switch(operation){
-        case '+': 
-            first = first + second; break;
-        case '-':
-            first = first - second; break;
-        case 'x':
-            first = first * second; break;
-        case '/':
-            first = first / second; break;
-        case '%':
-            first = first % second; break;
-        default:
+        case '+': first = parseFloat((parseFloat(first)+parseFloat(second)).toFixed(9)).toString(); break;
+        case '-': first = parseFloat((first - second).toFixed(9)).toString(); break;
+        case 'x': first = parseFloat((first * second).toFixed(9)).toString(); break;
+        case '/': first = parseFloat((first / second).toFixed(9)).toString(); break;
+        case '%': first = parseFloat((first % second).toFixed(9)).toString(); break;
+        default: break;
     }
-    first = Math.round((first+ Number.EPSILON) * 100) / 100;
-    second = 0;
+    second = '';
     operation = '';
+    isDot = false;
     updateLowerDisplay();
 }
 
-let power = 0
-let isDot = false;
-let first = 0;
-let second = 0;
+let isDot = false;  // To only allow one decimal point in a number
+let first = '';
+let second = '';
 let operation = '';
 let lowerResult;
 let upperResult;
