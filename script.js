@@ -1,3 +1,21 @@
+function checkKey(e){
+    let key = grid.querySelector(".key[data-key = '" + e.key + "']");
+    if(key.classList.contains('number'))
+        updateNumber(key);
+    else if(key.classList.contains('operator'))
+        updateOperation(key);
+    else if(key.id == "dot")
+        dot(key);
+    else if(key.id == "equalto")
+        evaluate();
+    else if(key.id == "signChange")
+        updateSign();
+    else if(key.id == "delete")
+        del();
+    else if(key.id == "clear")
+        clear(); 
+}
+
 function updateLowerDisplay(){
     (operation == '') ? lowerResult = first : lowerResult = second;
     lowerDisplay.textContent = lowerResult;
@@ -18,14 +36,15 @@ function clearUpperDisplay(){
     upperDisplay.textContent = '';
 }
 
-function updateNumber(e){
-    let n = e.target.textContent;
+function updateNumber(target){
+    console.log(target);
+    let n = target.textContent;
     (operation == '') ? first += n : second += n;
     updateLowerDisplay();
 }
 
-function updateOperation(e){
-    let op = e.target.id;
+function updateOperation(target){
+    let op = target.id;
     isDot = false;
     if(first == '') return;
     if(second != '')
@@ -43,13 +62,14 @@ function updateOperation(e){
 }
 
 function updateSign(){
+    console.log("in");
     if(operation == ''){
         if(first != '')
-            (first.charAt(0) == '-') ? first = first.substring(1,) : first = '-' + first;
+            (first[0] == '-') ? first = first.slice(1,) : first = '-' + first;
     }
     else{
         if(second != '')
-            (second.charAt(0) == '-') ? second = second.substring(1,) : second = '-' + second;
+            (second[0] == '-') ? second = second.slice(1,) : second = '-' + second;
     }
     updateLowerDisplay();
     clearUpperDisplay();
@@ -72,12 +92,12 @@ function clear(){
     isDot = false;
 }
 
-function dot(e){
+function dot(target){
     if(operation == '')
         if(first.includes('.')) return;
     else 
         if(second.includes('.')) return;
-    updateNumber(e);
+    updateNumber(target);
 }
 
 function evaluate(){
@@ -113,11 +133,13 @@ let upperDisplay = document.querySelector('#top');
 
 const grid = document.querySelector('#grid');
 gridNumbers = grid.querySelectorAll('.number');
-gridNumbers.forEach(child => child.addEventListener('click', updateNumber));
+gridNumbers.forEach(child => child.addEventListener('click',function(e){updateNumber(e.target)}));
 gridOperators = grid.querySelectorAll('.operator');
-gridOperators.forEach(child => child.addEventListener('click', updateOperation));
+gridOperators.forEach(child => child.addEventListener('click', function(e){updateOperation(e.target)}));
 grid.querySelector('#equalto').addEventListener('click', evaluate);
 grid.querySelector('#signChange').addEventListener('click', updateSign);
 grid.querySelector('#delete').addEventListener('click', del);
 grid.querySelector('#clear').addEventListener('click', clear);
-grid.querySelector('#dot').addEventListener('click', dot);
+grid.querySelector('#dot').addEventListener('click', function(e){dot(e.target)});
+
+window.addEventListener('keydown', checkKey);
